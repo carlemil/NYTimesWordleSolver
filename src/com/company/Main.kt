@@ -19,13 +19,45 @@ object Main {
 
         println("Full list: " + fullList.size + ", " + fullList)
 
+        val notInUseFiltered = filterOutNotInUseCharWords(notInUse, fullList)
+        println("Not in use: " + notInUseFiltered.size + ", " + notInUseFiltered)
+
+        val wrongPlaceFiltered = filterOutWrongPlaceWords(wrongPlace, notInUseFiltered)
+
+        println("Wrong place: " + wrongPlaceFiltered.size + ", " + wrongPlaceFiltered)
+
+        val rightPlaceFiltered = filterOutRightPlaceWords(wrongPlaceFiltered, rightPlace)
+        println("Right place: " + rightPlaceFiltered.size + ", " + rightPlaceFiltered)
+
+        val rankedSortedList = rankList(rightPlaceFiltered)
+        println("Ranked candidates: $rankedSortedList")
+    }
+
+    private fun filterOutRightPlaceWords(
+        wrongPlaceFiltered: List<String>,
+        rightPlace: Regex
+    ): List<String> {
+        val rightPlaceFiltered = wrongPlaceFiltered.filter { word ->
+            rightPlace.matches(word)
+        }
+        return rightPlaceFiltered
+    }
+
+    private fun filterOutNotInUseCharWords(
+        notInUse: Set<Char>,
+        fullList: MutableList<String>
+    ): List<String> {
         val notInUseEx = ("[" + notInUse.fold("") { R, T -> R + T } + "]").toRegex()
-        println("notInUseEx $notInUseEx")
         val notInUseFiltered = fullList.filter { word ->
             notInUseEx.find(word)?.value == null
         }
-        println("Not in use: " + notInUseFiltered.size + ", " + notInUseFiltered)
+        return notInUseFiltered
+    }
 
+    private fun filterOutWrongPlaceWords(
+        wrongPlace: List<String>,
+        notInUseFiltered: List<String>
+    ): List<String> {
         val wrongPlaceRegEx = ("[" +
                 wrongPlace[0] + "]....||.[" +
                 wrongPlace[1] + "]...||..[" +
@@ -39,16 +71,7 @@ object Main {
                 r && (t == "_" || t.toRegex().find(word)?.value != null)
             }
         }
-
-        println("Wrong place: " + wrongPlaceFiltered.size + ", " + wrongPlaceFiltered)
-
-        val rightPlaceFiltered = wrongPlaceFiltered.filter { word ->
-            rightPlace.matches(word)
-        }
-        println("Right place: " + rightPlaceFiltered.size + ", " + rightPlaceFiltered)
-
-        val rankedSortedList = rankList(rightPlaceFiltered)
-        println("Ranked: $rankedSortedList")
+        return wrongPlaceFiltered
     }
 
     private fun rankList(wordsToRank: List<String>): List<String> {
